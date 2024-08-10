@@ -44,13 +44,13 @@ vmin = 0.004
 vmax = 4
 cmap = 'Reds'
 # #Download file fire_hotspot
-# file_fdcf = download_PROD(yyyymmddhhmn,product_name,f'{dir_in}fdcf\\Jul\\207\\')
+file_fdcf = download_PROD(yyyymmddhhmn,product_name,f'{dir_in}fdcf\\Jul\\207\\')
 
 # # Reprjetando o arquivo da Àrea para recortar o pantanal
-# area_array_reproject = remap(f'{dir_in}fdcf\\Jul\\207\\{file_fdcf}','Area',extent_pantanal,1)
+area_array_reproject = remap(f'{dir_in}fdcf\\Jul\\207\\{file_fdcf}','Area',extent_pantanal,1)
 
 # #Salva o array em formato npy
-# area_array_reproject.dump(f'{dir_in}fdcf\\Jul\\207\\npy\\fdcf_20202070630_area.npy')
+area_array_reproject.dump(f'{dir_in}fdcf\\Jul\\207\\npy\\fdcf_20202070630_area.npy')
 
 
 print('Plotando as imagens')
@@ -92,7 +92,7 @@ cb.ax.xaxis.set_tick_params(pad=-13)  # Colocando os rotulos dentro da barra da 
 
 
 #Salvando a imagem de saída
-# plt.savefig(f'{dir_out}fdcf\\Jul\\183\\fdcf_20201831500_pant_area1.png',bbox_inches='tight', pad_inches=0, dpi=d_p_i)
+plt.savefig(f'{dir_out}fdcf\\Jul\\183\\fdcf_20201831500_pant_area1.png',bbox_inches='tight', pad_inches=0, dpi=d_p_i)
 plt.show()
 
 

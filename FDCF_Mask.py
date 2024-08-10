@@ -40,23 +40,19 @@ extent_pantanal = [-59.3, -22.3, -54.7, -15.5] # Min lon, Min lat, Max lon, Max 
 yyyymmddhhmn = '202007011300'      
 product_name = "ABI-L2-FDCF"
 
-##------------------------------------
-variable = 'Mask' 
-vmin = 0
-vmax = 255
-cmap = "jet"
 #Download file fire_hotspot
 file_fdcf = download_PROD(yyyymmddhhmn,product_name,dir_in+'fdcf\\')
 
-# # Selecionando os pixels do estado do Mato Grosso
-brasil = list(shpreader.Reader(f'{dir_shapefiles}\\divisao_estados\\gadm40_BRA_1.shp').geometries())
-mt = brasil[10]  # shapefile só do estado do Mato Grosso
-amazonas = brasil[3] # shapefile só do estado do Amazonas
+#Shapefille Pantanal
+biomas = list(shpreader.Reader(f'{dir_shapefiles}\\Biomas_250mil\\lm_bioma_250.shp').geometries())
+pantanal = biomas[5]
+ax.add_geometries(pantanal, ccrs.PlateCarree(), edgecolor='orange', facecolor='none', linewidth=0.65, zorder=4)
 
 # # selecionando os pixels
 Fire_Mask = Dataset(f'{dir_in}fdcf\\{file_fdcf}')
 fire_mask_values = Fire_Mask.variables['Mask'][:, :]
 
+#Seleciona os pontos caracterizados pelo satelite, com maior probabilidade de serem realmente focos de incêncdios
 selected_fires = (fire_mask_values == 10) |(fire_mask_values == 13) | (fire_mask_values == 30)| (fire_mask_values == 33)
 
 Lat, Lon = Degrees(Fire_Mask)
@@ -67,14 +63,17 @@ p_lon = Lon[selected_fires]
 
 matriz_pixels_fogo = []
 for i in range(len(p_lat)):
-        if mt.covers(Point(p_lon[i], p_lat[i])):
+        if pantanal.covers(Point(p_lon[i], p_lat[i])):
             p = (p_lat[i],p_lon[i])
             matriz_pixels_fogo.append(p)
 
 #Reprojetando o arquivo 
-file_reproject =reprojectBruno(f'{dir_in}fdcf\\{file_fdcf}',variable,extent_pantanal,1,f'{dir_in}fdcf\\')
-                               
-data = Dataset(file_reproject).variables['Band1'][:]
+file_reproject = remap(f'{dir_in}fdcf\\Jul\\207\\{file_fdcf}','Area',extent_pantanal,1)
+
+data=file_reproject.ReadAsarray()
+
+# #Salva o array em formato npy
+data.dump(f'{dir_in}fdcf\\Jul\\207\\npy\\fdcf_20202070630_area.npy')
 
 
 # Definindo tamanho da imagem de saida
@@ -102,9 +101,6 @@ ax.add_geometries(mt, ccrs.PlateCarree(), edgecolor='orange', facecolor='none', 
 gl = ax.gridlines(crs=ccrs.PlateCarree(), color='black', alpha=0.7, linestyle='--', linewidth=0.2, xlocs=np.arange(-180, 180, 5), ylocs=np.arange(-90, 90, 5))
 gl.top_labels = False
 gl.right_labels = False
-
-
-
 
 #Plotando imagem
 img = ax.imshow(data,origin='upper',cmap=cmap, extent=img_extent,vmin=vmin,vmax=vmax)
